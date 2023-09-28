@@ -25,12 +25,12 @@ const adminThreshold = parseInt(process.env.ADMIN_THRESHOLD);
 confirm(
     {
         CONTRACTS_PATH: contractsPath || null,
-        PREFIX: prefix || null,
-        CHAIN: chain || null,
-        URL: url || null,
-        PRIVATE_KEY: privKey || null,
-        ADMIN_THRESHOLD: adminThreshold || null,
-        SKIP_CONFIRM: skipConfirm || null,
+        PREFIX: 'codelight' || null,
+        CHAIN: 'goerli' || null,
+        URL: 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW' || null,
+        PRIVATE_KEY: '0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144' || null,
+        ADMIN_THRESHOLD: 10000 || null,
+        SKIP_CONFIRM: true || null,
     },
     prefix && chain && url && privKey && adminThreshold,
 );

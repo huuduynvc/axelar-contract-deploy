@@ -97,8 +97,8 @@ module.exports = {
     },
 
     getEVMAddresses(prefix, chain) {
-        const keyID = JSON.parse(execSync(`${prefix} "axelard q multisig key-id ${chain} --output json"`)).key_id;
-        const evmAddresses = JSON.parse(execSync(`${prefix} "axelard q evm address ${chain} --key-id ${keyID} --output json"`));
+        const keyID = JSON.parse(execSync(`"axelard q multisig key-id ${chain} --output json"`)).key_id;
+        const evmAddresses = JSON.parse(execSync(`"axelard q evm address ${chain} --key-id ${keyID} --output json"`));
         const sortedAddresses = sortBy(evmAddresses.addresses, (weightedAddress) => weightedAddress.address.toLowerCase());
 
         const addresses = sortedAddresses.map((weightedAddress) => weightedAddress.address);
@@ -109,7 +109,7 @@ module.exports = {
     },
 
     getProxy(prefix, chain) {
-        const proxy = JSON.parse(execSync(`${prefix} "axelard q evm gateway-address ${chain} --output json"`)).address;
+        const proxy = JSON.parse(execSync(`"axelard q evm gateway-address ${chain} --output json"`)).address;
         return proxy;
     },
 
