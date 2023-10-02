@@ -52,31 +52,15 @@ const contracts = {};
 
 (async () => {
     printLog('loading contract factories');
-    // the ABIs for the contracts below must be manually downloaded/compiled
-    // const messageSenderFactory = await getContractFactory('MessageSender', wallet);
-    const messageReceiverFactory = await getContractFactory('MessageReceiver', wallet);
-    printLog('contract factories loaded');
+    const executableSampleFactory = await getContractFactory('ExecutableSample', wallet);
+    printLog('executableSample contract factories loaded');
 
-    // printLog(`deploying message sender contract`);
-    // const messageSender = await messageSenderFactory
-    //     .deploy('0xe432150cce91c13a887f7D836923d5597adD8E31', '0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6')
-    //     .then((d) => d.deployed());
-    // printLog(`deployed message sender at address ${messageSender.address}`);
-    // contracts.messageSender = messageSender.address;
-
-    printLog(`deploying message receiver contract`);
-    const messageReceiver = await messageReceiverFactory
-        .deploy('0x8932A493Aa19095f8ae980c7e45bDe41F4708C89', '0xC47FD511FA38903942Ab1A395723f478Fe2F8E9C')
+    printLog(`deploying executableSample contract`);
+    const executableSample = await executableSampleFactory
+        .deploy('0xc1c7BF746C4cc5eC0b3777f4C255BF26252e9531', '0xC47FD511FA38903942Ab1A395723f478Fe2F8E9C')
         .then((d) => d.deployed());
-    printLog(`deployed message receiver at address ${messageReceiver.address}`);
-    contracts.messageReceiver = messageReceiver.address;
-
-    // printLog(`deploying message receiver contract`);
-    // const messageReceiver = await messageReceiverFactory
-    //     .deploy('0xe432150cce91c13a887f7D836923d5597adD8E31', '0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6')
-    //     .then((d) => d.deployed());
-    // printLog(`deployed message receiver at address ${messageReceiver.address}`);
-    // contracts.messageReceiver = messageReceiver.address;
+    printLog(`deployed executableSample at address ${executableSample.address}`);
+    contracts.executableSample = executableSample.address;
 })()
     .catch((err) => {
         console.error(err);
