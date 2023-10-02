@@ -47,6 +47,8 @@ module.exports = {
             url: 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW',
             accounts: [`0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144`],
             chainId: 5,
+            gas: 2100000,
+            gasPrice: 8000000000,
         },
         fuji: {
             url: 'https://api.avax-test.network/ext/bc/C/rpc',

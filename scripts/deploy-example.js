@@ -2,13 +2,12 @@
 
 require('dotenv').config();
 
-const { printLog, printObj, confirm, parseWei, getTxOptions } = require('./utils');
+const { printLog, printObj, confirm, parseWei } = require('./utils');
 const { ethers } = require('hardhat');
 const {
     getContractFactory,
     Wallet,
     providers: { JsonRpcProvider },
-    utils: { defaultAbiCoder, arrayify },
 } = ethers;
 
 // these environment variables should be defined in an '.env' file
@@ -52,40 +51,32 @@ const wallet = new Wallet(privKey, provider);
 const contracts = {};
 
 (async () => {
-    printLog('fetching fee data');
-    const feeData = await provider.getFeeData();
-    printObj({ feeData });
-    const options = getTxOptions(feeData, { maxFeePerGas, maxPriorityFeePerGas, gasPrice, gasLimit });
-    printObj({ tx_options: options });
-
     printLog('loading contract factories');
     // the ABIs for the contracts below must be manually downloaded/compiled
-    const gasServiceFactory = await getContractFactory('AxelarGasService', wallet);
-    const gasReceiverProxyFactory = await getContractFactory('AxelarGasReceiverProxy', wallet);
-    const authFactory = await getContractFactory('AxelarAuthWeighted', wallet);
+    // const messageSenderFactory = await getContractFactory('MessageSender', wallet);
+    const messageReceiverFactory = await getContractFactory('MessageReceiver', wallet);
     printLog('contract factories loaded');
 
-    printLog(`deploying auth contract`);
-    const auth = await authFactory.deploy(paramsAuth).then((d) => d.deployed());
-    printLog(`params of auth contract ${paramsAuth}`);
-    printLog(`deployed auth at address ${auth.address}`);
-    contracts.auth = auth.address;
+    // printLog(`deploying message sender contract`);
+    // const messageSender = await messageSenderFactory
+    //     .deploy('0xe432150cce91c13a887f7D836923d5597adD8E31', '0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6')
+    //     .then((d) => d.deployed());
+    // printLog(`deployed message sender at address ${messageSender.address}`);
+    // contracts.messageSender = messageSender.address;
 
-    printLog(`deploying gas service contract`);
-    const gasService = await gasServiceFactory.deploy(auth.address).then((d) => d.deployed());
-    printLog(`deployed gas service at address ${gasService.address}`);
-    printLog(`param of gas service contract ${auth.address}`);
-    contracts.gasService = gasService.address;
+    printLog(`deploying message receiver contract`);
+    const messageReceiver = await messageReceiverFactory
+        .deploy('0x8932A493Aa19095f8ae980c7e45bDe41F4708C89', '0xC47FD511FA38903942Ab1A395723f478Fe2F8E9C')
+        .then((d) => d.deployed());
+    printLog(`deployed message receiver at address ${messageReceiver.address}`);
+    contracts.messageReceiver = messageReceiver.address;
 
-    printLog(`deploying gas receiver proxy contract`);
-    const gasReceiverProxy = await gasReceiverProxyFactory.deploy(gasService.address, paramsProxy).then((d) => d.deployed());
-    printLog(`deployed gas receiver proxy at address ${gasReceiverProxy.address}`);
-    printLog(`param of gas receiver proxy contract ${gasService.address} ${paramsProxy}`);
-    contracts.gasReceiverProxy = gasReceiverProxy.address;
-
-    printLog('transferring auth ownership');
-    await auth.transferOwnership(gasReceiverProxy.address, options);
-    printLog('transferred auth ownership. All done!');
+    // printLog(`deploying message receiver contract`);
+    // const messageReceiver = await messageReceiverFactory
+    //     .deploy('0xe432150cce91c13a887f7D836923d5597adD8E31', '0xbE406F0189A0B4cf3A05C286473D23791Dd44Cc6')
+    //     .then((d) => d.deployed());
+    // printLog(`deployed message receiver at address ${messageReceiver.address}`);
+    // contracts.messageReceiver = messageReceiver.address;
 })()
     .catch((err) => {
         console.error(err);
