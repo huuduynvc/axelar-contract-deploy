@@ -9,18 +9,34 @@ const {
 const { getTxOptions } = require('../scripts/utils');
 
 const { getSignedWeightedExecuteInput, buildCommandBatch, getApproveContractCall, getGasOptions, getRandomID } = require('../test/utils');
-const goerliChainId = 5;
-const goerliRpcUrl = 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW';
 
 const privateKey = '0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144';
 
-const srcChain = 'Avalanche';
-const srcContract = '0x33Ec408D7B4359733a28c0aD21C36ed7ff58F792';
+const goerliChainId = 5;
+const goerliChainName = 'ethereum-2';
+const goerliRpcUrl = 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW';
+const goerliGatewayContract = '0xc1c7BF746C4cc5eC0b3777f4C255BF26252e9531';
+const goerliCustomContract = '0x3fEE1D666eb14D0701ceC6D2D234624c4C01b74C';
 
-const desChain = 'Avalanche';
-const desContract = '0x6c15f7b26C2b14C0B3f7dC3CCF3d283EF2dA0C2E';
+const fujiChainName = 'Avalanche';
+const fujiChainId = 43113;
+const fujiChainRpcUrl = 'https://api.avax-test.network/ext/bc/C/rpc';
+const fujiCustomContract = '';
+const fujiGatewayContract = '0xE14A8bbECCd75CF7a27A43A1b5abe9114251C03d';
 
-const goerliGatewayContract = '0x8932A493Aa19095f8ae980c7e45bDe41F4708C89';
+// source chain config
+const sourceChainId = goerliChainId;
+const sourceChainRpc = goerliRpcUrl;
+const sourceChainName = goerliChainName;
+const sourceGatewayContract = goerliGatewayContract;
+const sourceCustomContract = goerliCustomContract;
+
+// destination chain config
+const destinationChainId = goerliChainId;
+const destinationChainRpc = goerliRpcUrl;
+const destinationChainName = goerliChainName;
+const destinationGatewayContract = goerliGatewayContract;
+const destinationCustomContract = goerliCustomContract;
 
 const deployGateway = async (proxyContractAddress, rpcUrl) => {
     const provider = new JsonRpcProvider(rpcUrl);
@@ -32,36 +48,44 @@ const deployGateway = async (proxyContractAddress, rpcUrl) => {
 };
 
 const contractCall = async () => {
-    const provider = new JsonRpcProvider(goerliRpcUrl);
+    const provider = new JsonRpcProvider(sourceChainRpc);
     const owner = new Wallet(privateKey, provider);
 
     console.log('------contract call source gateway-----------');
-    const sourceContractCall = await getContractAt('MessageSender', srcContract, owner);
-    await sourceContractCall.sendMessage(desChain, desContract, 'good morning');
+    const sourceContractCall = await getContractAt('ExecutableSample', sourceCustomContract, owner);
+    await sourceContractCall.sendMessage(destinationChainName, destinationCustomContract, 'good morning');
     console.log('--------done---------');
 };
 
 const approveAndExecuteMessage = async () => {
-    const provider = new JsonRpcProvider(goerliRpcUrl);
+    const provider = new JsonRpcProvider(destinationChainRpc);
     const owner = new Wallet(privateKey, provider);
-    const destinationChainGateway = await deployGateway(goerliGatewayContract, goerliRpcUrl);
+    const destinationChainGateway = await deployGateway(destinationGatewayContract, destinationChainRpc);
 
     console.log('------start-----------');
 
-    const payload = defaultAbiCoder.encode(['string'], ['good afternoon']);
+    const payload = defaultAbiCoder.encode(['string'], ['good afternoon 1']);
     const payloadHash = keccak256(payload);
     const commandId = getRandomID();
-    console.log('commandId: ', commandId);
-    const sourceTxHash = keccak256('0xcb07e89479df1fae2d99904f29996a6b8840f248151ab1bf1521dc768e000ece');
+    const sourceTxHash = keccak256('0x69a38e71ce125c1e205a958c33a61b17de25852ae497837034ddaed60a8a33ca');
     const sourceEventIndex = 1;
 
     console.log('------build command batch-----------');
 
     const approveData = buildCommandBatch(
-        goerliChainId,
+        destinationChainId,
         [commandId],
         ['approveContractCall'],
-        [getApproveContractCall(srcChain, srcContract, owner.address, payloadHash, sourceTxHash, sourceEventIndex)],
+        [
+            getApproveContractCall(
+                sourceChainName,
+                sourceCustomContract,
+                destinationCustomContract,
+                payloadHash,
+                sourceTxHash,
+                sourceEventIndex,
+            ),
+        ],
     );
 
     console.log('------get signed weighted execute input-----------');
@@ -74,22 +98,18 @@ const approveAndExecuteMessage = async () => {
     console.log('------check approved-----------');
     const isApprovedInitiallyBefore = await destinationChainGateway.isContractCallApproved(
         commandId,
-        srcChain,
-        srcContract,
-        owner.address,
+        sourceChainName,
+        sourceCustomContract,
+        destinationCustomContract,
         payloadHash,
     );
     console.log(isApprovedInitiallyBefore);
 
     console.log('------execute destination contract-----------');
 
-    console.log('--------fetching fee data--------');
-    const feeData = await provider.getFeeData();
-    const options = getTxOptions(feeData, { maxFeePerGas: 1000, maxPriorityFeePerGas: 1000, gasPrice: 5000, gasLimit: 50000 });
-
-    const tx = await (
-        await getContractAt('AxelarExecutable', desContract, owner)
-    ).execute(commandId, srcChain, srcContract, payloadHash, options);
+    const tx = await (await ethers.getContractFactory('AxelarExecutable', owner))
+        .attach(destinationCustomContract)
+        .execute(commandId, sourceChainName, sourceCustomContract, payload);
 
     try {
         await tx.wait();
@@ -98,7 +118,6 @@ const approveAndExecuteMessage = async () => {
     }
 
     console.log(`--------successfully executed call at tx ${tx.hash}`);
-
     console.log('--------done---------');
 };
 
