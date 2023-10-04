@@ -6,23 +6,27 @@ const {
     providers: { JsonRpcProvider },
 } = ethers;
 
-const { getTxOptions } = require('../scripts/utils');
-
 const { getSignedWeightedExecuteInput, buildCommandBatch, getApproveContractCall, getGasOptions, getRandomID } = require('../test/utils');
 
-const privateKey = '0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144';
+const privateKey = process.env.PRIVATE_KEY;
 
 const goerliChainId = 5;
 const goerliChainName = 'ethereum-2';
-const goerliRpcUrl = 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW';
+const goerliRpcUrl = process.env.GOERLI_RPC_URL;
 const goerliGatewayContract = '0xc1c7BF746C4cc5eC0b3777f4C255BF26252e9531';
 const goerliCustomContract = '0x3fEE1D666eb14D0701ceC6D2D234624c4C01b74C';
 
 const fujiChainName = 'Avalanche';
 const fujiChainId = 43113;
-const fujiChainRpcUrl = 'https://api.avax-test.network/ext/bc/C/rpc';
+const fujiChainRpcUrl = process.env.FUJI_RPC_URL;
 const fujiCustomContract = '';
 const fujiGatewayContract = '0xE14A8bbECCd75CF7a27A43A1b5abe9114251C03d';
+
+const lineaChainName = 'linea';
+const lineaChainId = 59140;
+const lineaChainRpcUrl = process.env.LINEA_RPC_URL;
+const lineaCustomContract = '';
+const lineaGatewayContract = '';
 
 // source chain config
 const sourceChainId = goerliChainId;

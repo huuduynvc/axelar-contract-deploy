@@ -2,7 +2,7 @@
 
 require('dotenv').config();
 
-const { printLog, printObj, confirm, getEVMAddresses, pubkeysToAddresses, parseWei, getTxOptions } = require('./utils');
+const { printLog, printObj, confirm, parseWei, getTxOptions } = require('./utils');
 const { ethers } = require('hardhat');
 const {
     getContractFactory,
@@ -12,27 +12,12 @@ const {
 } = ethers;
 
 // these environment variables should be defined in an '.env' file
-// const skipConfirm = process.env.SKIP_CONFIRM;
-// const prefix = process.env.PREFIX;
-// const chain = process.env.CHAIN;
-// const url = process.env.RPC_URL;
-// const privKey = process.env.PRIVATE_KEY;
-// const adminPubkeys = process.env.ADMIN_PUBKEYS;
-// const adminAddresses = process.env.ADMIN_ADDRESSES;
-// const adminThreshold = process.env.ADMIN_THRESHOLD;
-// const gasPrice = parseWei(process.env.GAS_PRICE);
-// const maxFeePerGas = parseWei(process.env.MAX_FEE_PER_GAS);
-// const maxPriorityFeePerGas = parseWei(process.env.MAX_PRIORITY_FEE_PER_GAS);
-// const gasLimit = process.env.GAS_LIMIT ? Number(process.env.GAS_LIMIT) : Number(22000);
 const skipConfirm = process.env.SKIP_CONFIRM;
-const prefix = 'axelar';
-const chain = 'fuji';
-const url = 'https://api.avax-test.network/ext/bc/C/rpc';
-// const chain = 'goerli';
-// const url = 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW';
-const privKey = '0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144';
+const prefix = process.env.PREFIX;
+const url = process.env.GOERLI_RPC_URL;
+const privKey = process.env.PRIVATE_KEY;
 const adminPubkeys = process.env.ADMIN_PUBKEYS;
-const adminAddresses = '0x82029f30d6e6cdb0ddb3c0582cd7822104926979';
+const adminAddresses = process.env.ADMIN_ADDRESSES;
 const adminThreshold = 1;
 const gasPrice = parseWei(process.env.GAS_PRICE);
 const maxFeePerGas = parseWei(process.env.MAX_FEE_PER_GAS);
@@ -45,7 +30,6 @@ console.log(require('dotenv').config().parsed, process.env.PREFIX);
 confirm(
     {
         PREFIX: prefix || null,
-        CHAIN: chain || null,
         URL: url || null,
         PRIVATE_KEY: privKey ? '*****REDACTED*****' : null,
         ADMIN_PUBKEYS: adminPubkeys || null,
@@ -57,15 +41,13 @@ confirm(
         GAS_LIMIT: gasLimit || 22000,
         SKIP_CONFIRM: skipConfirm || null,
     },
-    prefix && chain && url && privKey && adminThreshold && (adminPubkeys || adminAddresses),
+    prefix && url && privKey && adminThreshold && (adminPubkeys || adminAddresses),
 );
 
 const provider = new JsonRpcProvider(url);
 const wallet = new Wallet(privKey, provider);
 
 printLog('retrieving addresses');
-// const { addresses, weights, threshold } = getEVMAddresses(prefix, chain);
-// printObj({ addresses, weights, threshold });
 const admins = [adminAddresses];
 printObj({ admins });
 

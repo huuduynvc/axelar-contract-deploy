@@ -1,18 +1,10 @@
 require('@nomicfoundation/hardhat-toolbox');
 require('solidity-coverage');
 require('dotenv').config();
-const { importNetworks, readJSON } = require('@axelar-network/axelar-chains-config');
 
 if (process.env.STORAGE_LAYOUT) {
     require('hardhat-storage-layout');
 }
-
-const env = process.env.ENV || 'testnet';
-// const chains = require(`@axelar-network/axelar-chains-config/info/${env}.json`);
-// const keys = readJSON(`${__dirname}/keys.json`);
-// const { networks, etherscan } = importNetworks(chains, keys);
-
-console.log(process.env.PRIVATE_KEY);
 
 /**
  * @type import('hardhat/config').HardhatUserConfig
@@ -44,26 +36,43 @@ module.exports = {
     defaultNetwork: 'goerli',
     networks: {
         goerli: {
-            url: 'https://eth-goerli.g.alchemy.com/v2/u1WmstiSjUmEYFMr_x8bxqMpwsZYCbJW',
-            accounts: [`0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144`],
+            url: `${process.env.GOERLI_RPC_URL}`,
+            accounts: [`${process.env.PRIVATE_KEY}`],
             chainId: 5,
             gas: 2100000,
             gasPrice: 8000000000,
         },
         fuji: {
-            url: 'https://api.avax-test.network/ext/bc/C/rpc',
+            url: `${process.env.FUJI_RPC_URl}`,
             gasPrice: 225000000000,
             chainId: 43113,
-            accounts: [`0x7710afc48f3d13388d74e3e3140725e9a6124cc988199ed16c45d69cc651f144`],
+            accounts: [`${process.env.PRIVATE_KEY}`],
+        },
+        linea_testnet: {
+            url: `${process.env.LINEA_RPC_URL}`,
+            accounts: [`${process.env.PRIVATE_KEY}`],
+            gas: 2100000,
+            gasPrice: 8000000000,
         },
         // add new config chain
     },
     etherscan: {
         apiKey: {
-            goerli: `D7UGFXZH6QFSTWIPJVA4Y1RZSB4S29H15M`,
-            avalancheFujiTestnet: 'GA57W31F21RBNWTUDZV7RI9KF3VTSWP8BT',
+            goerli: process.env.GOERLI_SCAN_KEY,
+            avalancheFujiTestnet: process.env.FUJI_SCAN_KEY,
+            linea_testnet: process.env.LINEA_SCAN_KEY,
             // add new config explorer
         },
+        customChains: [
+            {
+                network: 'linea_testnet',
+                chainId: 59140,
+                urls: {
+                    apiURL: 'https://api-testnet.lineascan.build/api',
+                    browserURL: 'https://goerli.lineascan.build/address',
+                },
+            },
+        ],
     },
     mocha: {
         timeout: 4 * 60 * 60 * 1000, // 4 hrs
@@ -72,5 +81,3 @@ module.exports = {
         enabled: process.env.REPORT_GAS !== undefined,
     },
 };
-
-// npx hardhat --network goerli verify --constructor-args ./args/axelar-auth-weighted.js 0x7c0E139Ca70eBF453F4Cb847b1bD78c75f381447
