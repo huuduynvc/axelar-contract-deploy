@@ -47,6 +47,7 @@ const provider = new JsonRpcProvider(url);
 const wallet = new Wallet(privKey, provider);
 
 const contracts = {};
+const admins = [adminAddresses];
 const paramsAuth = [defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256'], [admins, [1], adminThreshold])];
 const paramsProxy = arrayify(defaultAbiCoder.encode(['address[]', 'uint8', 'bytes'], [admins, adminThreshold, '0x']));
 
@@ -61,19 +62,12 @@ const paramsProxy = arrayify(defaultAbiCoder.encode(['address[]', 'uint8', 'byte
     // the ABIs for the contracts below must be manually downloaded/compiled
     const gasServiceFactory = await getContractFactory('AxelarGasService', wallet);
     const gasReceiverProxyFactory = await getContractFactory('AxelarGasReceiverProxy', wallet);
-    const authFactory = await getContractFactory('AxelarAuthWeighted', wallet);
     printLog('contract factories loaded');
 
-    printLog(`deploying auth contract`);
-    const auth = await authFactory.deploy(paramsAuth).then((d) => d.deployed());
-    printLog(`params of auth contract ${paramsAuth}`);
-    printLog(`deployed auth at address ${auth.address}`);
-    contracts.auth = auth.address;
-
     printLog(`deploying gas service contract`);
-    const gasService = await gasServiceFactory.deploy(auth.address).then((d) => d.deployed());
+    const gasService = await gasServiceFactory.deploy(wallet.address).then((d) => d.deployed());
     printLog(`deployed gas service at address ${gasService.address}`);
-    printLog(`param of gas service contract ${auth.address}`);
+    printLog(`param of gas service contract ${wallet.address}`);
     contracts.gasService = gasService.address;
 
     printLog(`deploying gas receiver proxy contract`);
@@ -81,10 +75,6 @@ const paramsProxy = arrayify(defaultAbiCoder.encode(['address[]', 'uint8', 'byte
     printLog(`deployed gas receiver proxy at address ${gasReceiverProxy.address}`);
     printLog(`param of gas receiver proxy contract ${gasService.address} ${paramsProxy}`);
     contracts.gasReceiverProxy = gasReceiverProxy.address;
-
-    printLog('transferring auth ownership');
-    await auth.transferOwnership(gasReceiverProxy.address, options);
-    printLog('transferred auth ownership. All done!');
 })()
     .catch((err) => {
         console.error(err);
