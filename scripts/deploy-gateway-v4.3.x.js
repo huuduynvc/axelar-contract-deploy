@@ -50,12 +50,8 @@ const admins = [adminAddresses];
 printObj({ admins });
 
 const contracts = {};
-const paramsAuth = [defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256'], [[adminAddresses], [1], [adminThreshold]])];
-const paramsProxy = arrayify(defaultAbiCoder.encode(['address[]', 'uint8', 'bytes'], [admins, adminThreshold, '0x']));
-
-console.log([
-    defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256'], [['0xAE92f3b47dA60A57deA94970f5A8168405d31275'], [1], [adminThreshold]]),
-]);
+const paramsAuth = [defaultAbiCoder.encode(['address[]', 'uint256[]', 'uint256'], [[adminAddresses], [1], adminThreshold])];
+const paramsProxy = arrayify(defaultAbiCoder.encode(['address', 'address', 'bytes'], [adminAddresses, adminAddresses, '0x']));
 
 (async () => {
     printLog('fetching fee data');
@@ -89,10 +85,10 @@ console.log([
     printLog(`param of gateway proxy contract  ${gatewayImplementation.address} ---- ${paramsProxy})}`);
     printLog(`deployed gateway proxy at address ${gatewayProxy.address}`);
     contracts.gatewayProxy = gatewayProxy.address;
-    // printLog('transferring auth ownership');
-    // // await auth.transferOwnership(gatewayProxy.address, options);
-    // await auth.transferOwnership(gatewayProxy.address).then((tx) => tx.wait());
-    // printLog('transferred auth ownership. All done!');
+    printLog('transferring auth ownership');
+    await auth.transferOwnership(gatewayProxy.address, options);
+    await auth.transferOwnership(gatewayProxy.address).then((tx) => tx.wait());
+    printLog('transferred auth ownership. All done!');
 })()
     .catch((err) => {
         console.error(err);
